@@ -77,6 +77,14 @@ table{width:100%;border-collapse:collapse}td,th{padding:11px 12px;border-top:1px
 .e{font-size:13.5px;border-radius:6px;padding:1px 8px;display:inline-flex;gap:5px;align-items:center;border:1px solid #a7f3d0;background:var(--ok-soft);color:#065f46}.e.no{border-color:#fecdd3;background:var(--bad-soft);color:#9f1239}.e svg{width:13px;height:13px}
 .note{background:var(--soft);border-radius:12px;padding:12px 16px;font-size:14.875px;margin-top:14px}
 .proto{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 16px;font-size:14px;margin-bottom:24px;color:#78350f}
+.via{display:grid;grid-template-columns:150px 1fr 190px;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.via.hd{border-top:0;padding:0 0 6px}
+.strada{display:grid;grid-template-columns:repeat(4,1fr);position:relative}.via.hd .strada span{font-size:12.75px;color:var(--muted);text-align:center}
+.stop{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;font-size:12px;color:var(--muted)}
+.stop i{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #d4d4d4;position:relative;z-index:1}.stop.on i{background:var(--ok);border-color:var(--ok)}.stop.casa i{background:#262626;border-color:#262626}
+.stop:before{content:"";position:absolute;top:8px;right:50%;width:100%;height:3px;background:#e5e5e5}.stop.on:before{background:var(--ok)}.stop.casa:before{display:none}
+.stop small{font-size:12px}.stop.casa{padding-bottom:22px}button.stop:hover i{box-shadow:0 0 0 4px #0000000f}
+.esito{font-size:14.875px;font-weight:600;text-align:right}
+@media(max-width:1000px){.via{grid-template-columns:90px 1fr}.esito{grid-column:1/-1;text-align:left}}
 @media(max-width:1000px){.app{grid-template-columns:1fr}aside{display:none}.two{grid-template-columns:1fr}.crumb{margin-bottom:24px}.score b{font-size:32px}.hm{grid-template-columns:96px repeat(4,1fr)}}
 </style></head><body>
 <div class="app">
@@ -125,10 +133,16 @@ function inBreve() {
   '<li>Quando la domanda ha il tuo nome, <b>visitpistoia.eu</b> è citato nel ' + stat(sel('terr')).pct + '% delle risposte</li></ul></div>';
 }
 function scala() {
-  const col = p => p === 0 ? ['var(--bad-soft)', '#9f1239'] : p < 34 ? ['#f5f5f5', '#404040'] : p < 67 ? ['#d1fae5', '#065f46'] : ['#059669', '#fff'];
-  return '<div class="card"><div class="h">' + I.LuLayers + ' Fin dove arriva il tuo territorio ' + ex + '</div><p class="hs">Tema per tema, dalla domanda più larga alla più vicina. Clicca una casella per vedere chi nominano.</p>' +
-  '<div class="hm"><div></div>' + D.livelli.map(l => '<div class="hd">' + l.nome + (l.k === 'terr' ? ' · sito citato' : '') + '</div>').join('') +
-  D.temi.map(t => '<div style="display:flex;align-items:center;font-weight:500">' + t.nome + '</div>' + D.livelli.map(l => { const c = stat(sel(l.k, t.k)), [bg, fg] = col(c.pct); return '<button ' + (l.k === 'terr' ? 'data-jump="fonti"' : 'data-jump="mete" data-l="' + l.k + '" data-t="' + t.k + '"') + ' style="background:' + bg + ';color:' + fg + '"><b>' + c.pct + '%</b><span>' + c.yes + ' su ' + c.a + '</span></button>'; }).join('')).join('') + '</div></div>';
+  // per ogni tema: si parte da casa e ci si allontana. Una tappa è "raggiunta" se ti nominano in almeno 1 risposta su 3
+  const tappe = ['prov', 'reg', 'it'], nomi = { prov: 'Provincia e dintorni', reg: 'Toscana', it: 'Italia' };
+  const righe = D.temi.map(t => { const c = tappe.map(k => stat(sel(k, t.k))); let fin = -1; c.forEach((x, i) => { if (x.pct >= 34 && fin === i - 1) fin = i; }); return { t, c, fin }; }).sort((x, y) => y.fin - x.fin);
+  const esito = f => f === 2 ? ['Arriva in tutta Italia', 'var(--ok)'] : f === 1 ? ['Si ferma in Toscana', 'var(--warn)'] : f === 0 ? ['Si ferma in provincia', 'var(--bad)'] : ['Non esce dal territorio', 'var(--bad)'];
+  return '<div class="card"><div class="h">' + I.LuLayers + ' Fin dove arriva il tuo territorio ' + ex + '</div><p class="hs">Parti da casa tua e allontanati. Per ogni tema, la linea verde arriva fin dove gli assistenti ti nominano ancora quando la domanda non contiene il tuo nome.</p>' +
+  '<div class="via hd"><div></div><div class="strada"><span>Casa tua</span>' + tappe.map(k => '<span>' + nomi[k] + '</span>').join('') + '</div><div></div></div>' +
+  righe.map(({ t, c, fin }) => { const [txt, col] = esito(fin); return '<div class="via"><div style="font-weight:500">' + t.nome + '</div><div class="strada"><span class="stop on casa"><i></i></span>' +
+    c.map((x, i) => '<button class="stop' + (i <= fin ? ' on' : '') + '" data-jump="mete" data-l="' + tappe[i] + '" data-t="' + t.k + '"><i></i><small>' + x.yes + ' su ' + x.a + '</small></button>').join('') +
+    '</div><div class="esito" style="color:' + col + '">' + txt + '</div></div>'; }).join('') +
+  '<p class="sm" style="margin:14px 0 0">Una tappa è raggiunta quando ti nominano in almeno una risposta su tre. Sotto ogni tappa: in quante risposte compare un tuo luogo. Clicca una tappa per vedere chi nominano al posto tuo.</p></div>';
 }
 function mete() {
   const qs = sel(st.l, st.t), c = stat(qs), m = {}; qs.forEach(q => q.others.forEach(([n, v]) => m[n] = (m[n] || 0) + v));
