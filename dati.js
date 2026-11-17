@@ -1,0 +1,123 @@
+// PROTOTIPO del report per destinazioni. Le DOMANDE sono vere (scritte per Pistoia e Montagna Pistoiese);
+// i RISULTATI sono numeri d'esempio, non rilevati: servono a far vedere il formato, non a dire come stanno le cose.
+// r = i quattro assistenti in ordine (ChatGPT, Gemini, Claude, Perplexity): 1 se la risposta nomina un luogo del territorio.
+// Nel livello "territorio" la meta è nel testo della domanda, quindi r dice se la risposta cita il sito ufficiale come fonte.
+// o = altre mete nominate nelle risposte, con il numero di assistenti che le nominano (nel livello territorio: la fonte più citata).
+module.exports = {
+  territorio: 'Pistoia e Montagna Pistoiese',
+  breve: 'Pistoia e la sua montagna',
+  ente: 'Visit Pistoia',
+  site: 'visitpistoia.eu',
+  date: '17 novembre 2026',
+  monthYear: 'novembre 2026',
+  assistenti: ['ChatGPT', 'Gemini', 'Claude', 'Perplexity'],
+  // dal più largo al più stretto
+  livelli: [
+    { k: 'it', nome: 'Italia', icona: 'LuGlobe', chi: 'Chi non ha ancora scelto nemmeno la regione', regola: 'Nessun luogo nella domanda, solo il tema', confronto: 'Le mete italiane dello stesso tipo: Cimone e Roccaraso per la neve, Mantova e Ferrara per le città d’arte', misura: 'In quante risposte compare un vostro luogo' },
+    { k: 'reg', nome: 'Toscana', icona: 'LuMap', chi: 'Chi ha scelto la Toscana e cerca dove andare', regola: 'Nella domanda c’è la regione, non la provincia', confronto: 'I territori toscani: Lucca, Arezzo, Casentino, Garfagnana, Monte Amiata', misura: 'In quante risposte compare un vostro luogo' },
+    { k: 'prov', nome: 'Provincia e dintorni', icona: 'LuMapPinned', chi: 'Chi è già in zona, tra Firenze e Lucca', regola: 'Nella domanda c’è la provincia o l’area, non i vostri luoghi', confronto: 'I vicini: Montecatini Terme, Collodi, Pescia, Prato, Vinci, il Cimone', misura: 'In quante risposte compare un vostro luogo' },
+    { k: 'terr', nome: 'Il vostro territorio', icona: 'LuMapPin', chi: 'Chi vi ha già scelti e si organizza', regola: 'Nella domanda c’è il nome: Pistoia, Abetone, Montagna Pistoiese', confronto: 'Nessuna meta: qui contano le fonti che vi raccontano', misura: 'In quante risposte è citato il sito ufficiale' },
+  ],
+  temi: [
+    { k: 'arte', nome: 'Città d’arte', icona: 'LuLandmark', perche: 'Pistoia, la Cattedrale di San Zeno, i musei' },
+    { k: 'neve', nome: 'Neve e sci', icona: 'LuMountainSnow', perche: 'Abetone e la Montagna Pistoiese' },
+    { k: 'natura', nome: 'Cammini e natura', icona: 'LuFootprints', perche: 'San Jacopo, foreste del Teso e dell’Acquerino, Lago Scaffaiolo' },
+    { k: 'borghi', nome: 'Borghi', icona: 'LuCastle', perche: 'Cutigliano, Serravalle, Gavinana, Serra Pistoiese' },
+    { k: 'gusto', nome: 'Gusto', icona: 'LuUtensils', perche: 'Piatti tipici, olio, cioccolato di Agliana' },
+    { k: 'eventi', nome: 'Eventi e musica', icona: 'LuMusic', perche: 'Pistoia Blues, Giostra dell’Orso' },
+  ],
+  esclusi: [
+    ['Mare e spiagge', 'Il territorio non ha costa.'],
+    ['Terme', 'Montecatini è in provincia, ma fuori dal vostro ambito: è una meta di confronto, non un vostro tema.'],
+    ['Laghi e grandi città', 'Non sono motivi per cui si viene da voi.'],
+  ],
+  domande: [
+    // ───── Italia
+    { l: 'it', t: 'neve', q: 'Dove andare a sciare in Appennino?', r: '1110', o: 'Cimone:4,Roccaraso:4,Corno alle Scale:3,Campo Felice:2' },
+    { l: 'it', t: 'neve', q: 'Dove sciare nel centro Italia senza andare sulle Alpi?', r: '1110', o: 'Roccaraso:4,Cimone:4,Campo Imperatore:2,Monte Amiata:1' },
+    { l: 'it', t: 'neve', q: 'Migliori località sciistiche in Italia per una settimana bianca con i bambini', r: '0000', o: 'Val di Fassa:4,Alpe di Siusi:3,Livigno:3,Folgaria:2' },
+    { l: 'it', t: 'arte', q: 'Città d’arte italiane poco affollate da visitare in un weekend', r: '0100', o: 'Mantova:4,Ferrara:3,Bergamo:3,Lucca:3,Urbino:2' },
+    { l: 'it', t: 'arte', q: 'Quali città medievali visitare in Italia oltre a Siena?', r: '0000', o: 'San Gimignano:4,Perugia:3,Lucca:3,Viterbo:2' },
+    { l: 'it', t: 'natura', q: 'Cammini di tre o quattro giorni in Italia per chi inizia', r: '0001', o: 'Mugello:4,Val d’Orcia:4,Subiaco:2' },
+    { l: 'it', t: 'natura', q: 'Dove vedere il foliage in Italia in autunno?', r: '0001', o: 'Casentino:4,Trentino:3,Sila:2' },
+    { l: 'it', t: 'natura', q: 'Dove andare in montagna in estate in Italia senza folla?', r: '0000', o: 'Valle d’Aosta:3,Abruzzo:3,Trentino:2' },
+    { l: 'it', t: 'borghi', q: 'Borghi di montagna in Italia dove passare l’estate al fresco', r: '0000', o: 'Trentino:4,Valle d’Aosta:3,Garfagnana:1' },
+    { l: 'it', t: 'gusto', q: 'Weekend tra cibo e vino in Italia, fuori dalle solite mete', r: '0000', o: 'Langhe:4,Modena:3,Valpolicella:2' },
+    { l: 'it', t: 'eventi', q: 'Festival musicali estivi in Italia per cui vale un viaggio', r: '1001', o: 'Perugia:4,Lucca:4,Ravello:2' },
+    { l: 'it', t: 'eventi', q: 'Dove ascoltare blues dal vivo in Italia in estate?', r: '1111', o: 'Porretta Terme:3,Perugia:1' },
+    // ───── Toscana
+    { l: 'reg', t: 'neve', q: 'Dove si scia in Toscana?', r: '1111', o: 'Monte Amiata:4,Zum Zeri:2,Garfagnana:1' },
+    { l: 'reg', t: 'neve', q: 'Dove portare i bambini sulla neve in Toscana?', r: '1111', o: 'Monte Amiata:3,Garfagnana:1' },
+    { l: 'reg', t: 'arte', q: 'Città d’arte in Toscana meno turistiche di Firenze e Siena', r: '1010', o: 'Lucca:4,Arezzo:4,Volterra:3,Prato:2' },
+    { l: 'reg', t: 'arte', q: 'Quali città toscane visitare in giornata da Firenze in treno?', r: '1101', o: 'Lucca:4,Pisa:4,Arezzo:3,Prato:3' },
+    { l: 'reg', t: 'arte', q: 'Cosa vedere in Toscana in tre giorni oltre a Firenze?', r: '0000', o: 'Siena:4,Pisa:4,Lucca:4,San Gimignano:4,Val d’Orcia:3' },
+    { l: 'reg', t: 'natura', q: 'Weekend in montagna in Toscana in estate: dove andare?', r: '1111', o: 'Monte Amiata:4,Garfagnana:3,Casentino:3' },
+    { l: 'reg', t: 'natura', q: 'Dove vedere il foliage in Toscana?', r: '1011', o: 'Casentino:4,Vallombrosa:3,Monte Amiata:2' },
+    { l: 'reg', t: 'natura', q: 'Dove fare trekking in Toscana in estate, al fresco?', r: '1010', o: 'Casentino:4,Garfagnana:4,Monte Amiata:3,Alpi Apuane:3' },
+    { l: 'reg', t: 'natura', q: 'Cammini in Toscana da fare in pochi giorni', r: '0010', o: 'Val d’Orcia:3,Mugello:3,Casentino:2' },
+    { l: 'reg', t: 'borghi', q: 'Borghi di montagna in Toscana', r: '1100', o: 'Garfagnana:4,Casentino:3,Monte Amiata:3' },
+    { l: 'reg', t: 'borghi', q: 'I borghi più belli della Toscana da visitare', r: '0000', o: 'San Gimignano:4,Pienza:4,Pitigliano:3,Volterra:2' },
+    { l: 'reg', t: 'gusto', q: 'Dove mangiare bene in Toscana lontano dalle zone turistiche?', r: '0000', o: 'Maremma:3,Casentino:2,Mugello:2,Garfagnana:2' },
+    { l: 'reg', t: 'gusto', q: 'Prodotti tipici toscani da assaggiare sul posto: dove andare?', r: '0000', o: 'Chianti:4,Val d’Orcia:3,Garfagnana:2,Maremma:2' },
+    { l: 'reg', t: 'eventi', q: 'Eventi estivi in Toscana da non perdere', r: '1011', o: 'Lucca:4,Siena:4,Arezzo:2' },
+    // ───── Provincia e dintorni
+    { l: 'prov', t: 'arte', q: 'Cosa vedere in provincia di Pistoia?', r: '1111', o: 'Montecatini Terme:4,Collodi:4,Pescia:3' },
+    { l: 'prov', t: 'arte', q: 'Cosa vedere tra Firenze e Lucca?', r: '1110', o: 'Montecatini Terme:4,Prato:3,Collodi:3,Vinci:2' },
+    { l: 'prov', t: 'arte', q: 'Gita di un giorno da Firenze fuori dai soliti giri', r: '0100', o: 'Prato:3,Vinci:3,Mugello:3,Certaldo:2' },
+    { l: 'prov', t: 'neve', q: 'Dove sciare vicino a Firenze?', r: '1111', o: 'Cimone:2,Monte Amiata:1' },
+    { l: 'prov', t: 'natura', q: 'Weekend sull’Appennino tosco-emiliano: dove andare?', r: '1111', o: 'Cimone:4,Corno alle Scale:4,Porretta Terme:2' },
+    { l: 'prov', t: 'natura', q: 'Dove fare escursioni in giornata da Firenze?', r: '0010', o: 'Mugello:4,Vallombrosa:3,Casentino:3' },
+    { l: 'prov', t: 'borghi', q: 'Borghi da visitare in provincia di Pistoia', r: '1111', o: 'Montecatini Alto:4,Collodi:3,Buggiano Castello:2' },
+    { l: 'prov', t: 'borghi', q: 'Cosa vedere sul Montalbano?', r: '0100', o: 'Vinci:4,Carmignano:3,Artimino:2' },
+    { l: 'prov', t: 'gusto', q: 'Dove mangiare tipico in provincia di Pistoia?', r: '1101', o: 'Montecatini Terme:3,Pescia:2' },
+    { l: 'prov', t: 'eventi', q: 'Eventi d’estate in provincia di Pistoia', r: '1011', o: 'Montecatini Terme:3,Pescia:1' },
+    // ───── Il vostro territorio (le domande oggi in piattaforma)
+    { l: 'terr', t: 'arte', q: 'Cosa vedere a Pistoia: i luoghi da non perdere nel centro storico', r: '1011', o: 'visittuscany.com' },
+    { l: 'terr', t: 'arte', q: 'Quali musei visitare a Pistoia?', r: '1011', o: 'musei e fondazioni' },
+    { l: 'terr', t: 'arte', q: 'Cosa fare a Pistoia e dintorni in un weekend tra arte, cibo e natura?', r: '1010', o: 'guide e blog' },
+    { l: 'terr', t: 'arte', q: 'Itinerario per visitare Pistoia in un giorno a piedi', r: '0010', o: 'guide e blog' },
+    { l: 'terr', t: 'borghi', q: 'Cosa vedere sulla Montagna Pistoiese: paesi, natura e luoghi storici', r: '1110', o: 'visittuscany.com' },
+    { l: 'terr', t: 'natura', q: 'Dove vedere il foliage d’autunno sulla Montagna Pistoiese?', r: '1110', o: 'guide e blog' },
+    { l: 'terr', t: 'natura', q: 'Cammino di San Jacopo e itinerari jacopei a Pistoia: tappe e informazioni per i pellegrini', r: '0110', o: 'sito del cammino' },
+    { l: 'terr', t: 'natura', q: 'Cosa fare all’Abetone in estate con la famiglia?', r: '0010', o: 'tripadvisor.it' },
+    { l: 'terr', t: 'neve', q: 'Sciare all’Abetone e sulla Montagna Pistoiese: piste, impianti e skipass', r: '0000', o: 'sito degli impianti' },
+    { l: 'terr', t: 'gusto', q: 'Quali sono i piatti tipici di Pistoia e della Montagna Pistoiese?', r: '0010', o: 'guide e blog' },
+    { l: 'terr', t: 'eventi', q: 'Pistoia Blues Festival: date, programma e consigli per chi arriva da fuori', r: '0000', o: 'sito del festival' },
+    { l: 'terr', t: 'eventi', q: 'Cos’è la Giostra dell’Orso di Pistoia e quando si svolge?', r: '0100', o: 'wikipedia.org' },
+  ],
+  // in quante delle 192 risposte compare ciascun luogo (numeri d'esempio)
+  luoghi: [
+    ['Pistoia città', 92], ['Abetone', 61], ['Montagna Pistoiese', 38], ['Cutigliano', 17], ['San Marcello Piteglio', 9],
+    ['Serravalle Pistoiese', 6], ['Villa medicea La Magia', 3], ['Sambuca Pistoiese', 0], ['Valle dell’Orsigna', 0], ['Lago Scaffaiolo', 0],
+  ],
+  // sulle 48 risposte alle domande con il vostro nome: su 100, quante citano almeno una fonte del tipo (numeri d'esempio)
+  fonti: [
+    ['Guide, blog e giornali', 81, 'blog di viaggio, quotidiani locali'],
+    ['Altri enti del turismo', 58, 'visittuscany.com, italia.it'],
+    ['Il vostro sito ufficiale', 42, 'visitpistoia.eu', true],
+    ['Siti di recensioni', 35, 'tripadvisor.it'],
+    ['Wikipedia ed enciclopedie', 33, 'wikipedia.org'],
+    ['Istituzioni, musei e attrazioni', 27, 'comune, musei, impianti, festival'],
+    ['Prenotazioni e tour', 19, 'booking.com, getyourguide.com'],
+    ['Social e video', 10, 'youtube.com'],
+  ],
+  opportunita: [
+    ['reg', 'Città d’arte in Toscana meno turistiche di Firenze e Siena', 'Una pagina che dica perché Pistoia, con i luoghi e i tempi di visita.'],
+    ['reg', 'Cosa vedere in Toscana in tre giorni oltre a Firenze?', 'Un itinerario di tre giorni che passi da Pistoia e salga in montagna.'],
+    ['reg', 'I borghi più belli della Toscana da visitare', 'Cutigliano, Serravalle e Gavinana raccontati come borghi, non come frazioni.'],
+    ['reg', 'Cammini in Toscana da fare in pochi giorni', 'Il Cammino di San Jacopo tappa per tappa, con dove dormire.'],
+    ['prov', 'Gita di un giorno da Firenze fuori dai soliti giri', 'Pistoia in giornata: come arrivare, cosa vedere, dove mangiare.'],
+    ['it', 'Città d’arte italiane poco affollate da visitare in un weekend', 'Farsi raccontare da guide e giornali nazionali, non solo dal vostro sito.'],
+  ],
+  piano: [
+    { when: 'Dicembre', name: 'Decidere e misurare', items: ['Confermare i sei temi e togliere quelli che non vi riguardano', 'Confermare le mete di confronto per ogni scala', 'Ripetere le 48 domande una volta a settimana per quattro settimane'], goal: 'Una misura su quattro rilevazioni, con le domande e i confronti che riconoscete come vostri.' },
+    { when: 'Gennaio › marzo', name: 'Rispondere alle domande larghe', items: ['Una pagina per ogni domanda toscana dove non comparite: città d’arte, borghi, cammini', 'Pagine scritte con le parole di chi non vi conosce ancora', 'Il gusto come tema: piatti, produttori, dove assaggiare'], goal: 'Comparire nelle risposte sulla Toscana anche quando la domanda non parla di montagna.' },
+    { when: 'Da aprile', name: 'Farsi raccontare da altri', items: ['Lavorare con Visit Tuscany sulle pagine che gli assistenti leggono', 'Portare Pistoia nelle guide nazionali sulle città d’arte', 'Tenere allineate le informazioni su impianti, festival ed eventi'], goal: 'Salire di una scala: dalla Toscana all’Italia sui temi dove oggi siete assenti.' },
+  ],
+  asks: [
+    ['LuListChecks', 'La conferma dei temi', 'Sei temi inclusi e tre esclusi: diteci se manca qualcosa o se uno non vi rappresenta.'],
+    ['LuMapPinned', 'Le mete con cui vi confrontate', 'Per ogni scala abbiamo scelto noi i confronti: confermateli o cambiateli.'],
+    ['LuMessageCircle', 'Le domande dei vostri uffici informazioni', 'Quello che vi chiedono al banco e al telefono diventa una domanda del prossimo test.'],
+    ['LuChartLine', 'L’accesso a Search Console e Analytics', 'Per affiancare alle risposte degli assistenti le visite vere al sito.'],
+  ],
+};

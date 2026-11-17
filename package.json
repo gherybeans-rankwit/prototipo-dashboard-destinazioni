@@ -1,0 +1,1 @@
+{ "name": "prototipo-dashboard-destinazioni", "private": true, "type": "commonjs", "scripts": { "build": "node build.js" } }
