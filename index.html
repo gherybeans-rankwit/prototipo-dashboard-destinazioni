@@ -53,6 +53,13 @@ table{width:100%;border-collapse:collapse}td,th{padding:11px 12px;border-top:1px
 .stop small{font-size:12px}.stop.casa{padding-bottom:22px}button.stop:hover i{box-shadow:0 0 0 4px #0000000f}
 .esito{font-size:14.875px;font-weight:600;text-align:right}
 @media(max-width:1000px){.via{grid-template-columns:90px 1fr}.esito{grid-column:1/-1;text-align:left}}
+.spiega{font-size:17px;margin:12px 0 0;max-width:760px}.eb{font-size:12.75px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+.tre{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.passo{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.passo .num{width:24px;height:24px;border-radius:50%;background:#262626;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}.passo .pn{font-weight:600}
+.dom{background:var(--soft);border-radius:10px;padding:8px 12px;font-size:14.875px;font-style:italic;margin:4px 0}
+.ris{display:inline-block;align-self:flex-start;font-size:13.5px;font-weight:600;border-radius:6px;padding:2px 9px;border:1px solid #a7f3d0;background:var(--ok-soft);color:#065f46}.ris.mid{border-color:#fde68a;background:#fffbeb;color:#92400e}.ris.no{border-color:#fecdd3;background:var(--bad-soft);color:#9f1239}
+table.tt td,table.tt th{width:25%}.cel{border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;gap:3px}.cel small{font-size:12.75px;color:var(--muted)}.cel:hover .ris{box-shadow:0 0 0 3px #0000000d}
+@media(max-width:1000px){.tre{grid-template-columns:1fr}}
 @media(max-width:1000px){.app{grid-template-columns:1fr}aside{display:none}.two{grid-template-columns:1fr}.crumb{margin-bottom:24px}.score b{font-size:32px}.hm{grid-template-columns:96px repeat(4,1fr)}}
 </style></head><body>
 <div class="app">
@@ -101,16 +108,19 @@ function inBreve() {
   '<li>Quando la domanda ha il tuo nome, <b>visitpistoia.eu</b> è citato nel ' + stat(sel('terr')).pct + '% delle risposte</li></ul></div>';
 }
 function scala() {
-  // per ogni tema: si parte da casa e ci si allontana. Una tappa è "raggiunta" se ti nominano in almeno 1 risposta su 3
-  const tappe = ['prov', 'reg', 'it'], nomi = { prov: 'Provincia e dintorni', reg: 'Toscana', it: 'Italia' };
-  const righe = D.temi.map(t => { const c = tappe.map(k => stat(sel(k, t.k))); let fin = -1; c.forEach((x, i) => { if (x.pct >= 34 && fin === i - 1) fin = i; }); return { t, c, fin }; }).sort((x, y) => y.fin - x.fin);
-  const esito = f => f === 2 ? ['Arriva in tutta Italia', 'var(--ok)'] : f === 1 ? ['Si ferma in Toscana', 'var(--warn)'] : f === 0 ? ['Si ferma in provincia', 'var(--bad)'] : ['Non esce dal territorio', 'var(--bad)'];
-  return '<div class="card"><div class="h">' + I.LuLayers + ' Fin dove arriva il tuo territorio ' + ex + '</div><p class="hs">Parti da casa tua e allontanati. Per ogni tema, la linea verde arriva fin dove gli assistenti ti nominano ancora quando la domanda non contiene il tuo nome.</p>' +
-  '<div class="via hd"><div></div><div class="strada"><span>Casa tua</span>' + tappe.map(k => '<span>' + nomi[k] + '</span>').join('') + '</div><div></div></div>' +
-  righe.map(({ t, c, fin }) => { const [txt, col] = esito(fin); return '<div class="via"><div style="font-weight:500">' + t.nome + '</div><div class="strada"><span class="stop on casa"><i></i></span>' +
-    c.map((x, i) => '<button class="stop' + (i <= fin ? ' on' : '') + '" data-jump="mete" data-l="' + tappe[i] + '" data-t="' + t.k + '"><i></i><small>' + x.yes + ' su ' + x.a + '</small></button>').join('') +
-    '</div><div class="esito" style="color:' + col + '">' + txt + '</div></div>'; }).join('') +
-  '<p class="sm" style="margin:14px 0 0">Una tappa è raggiunta quando ti nominano in almeno una risposta su tre. Sotto ogni tappa: in quante risposte compare un tuo luogo. Clicca una tappa per vedere chi nominano al posto tuo.</p></div>';
+  // tre cerchi di domande senza il nome della meta, dal più vicino al più largo
+  const tappe = [['prov', 'Vicino a te', 'Chi è già in zona e cerca cosa fare nei dintorni.'], ['reg', 'In Toscana', 'Chi ha scelto la Toscana, ma non sa ancora dove.'], ['it', 'In tutta Italia', 'Chi non ha ancora scelto nemmeno la regione.']];
+  const es = ['Cosa vedere tra Firenze e Lucca?', 'Città d’arte in Toscana meno turistiche di Firenze e Siena', 'Città d’arte italiane poco affollate da visitare in un weekend'].map(t => Q.find(q => q.q === t));
+  const esito = p => p >= 67 ? ['Ti trovano', 'ok'] : p >= 34 ? ['A volte', 'mid'] : ['Non ti trovano', 'no'];
+  const chi = n => n === NE ? 'Tutti e ' + NE + ' gli assistenti nominano Pistoia' : n === 0 ? 'Nessun assistente nomina Pistoia' : n + (n === 1 ? ' assistente su ' : ' assistenti su ') + NE + (n === 1 ? ' nomina Pistoia' : ' nominano Pistoia');
+  return '<div class="card"><div class="h">' + I.LuLayers + ' Ti trovano anche se non ti cercano? ' + ex + '</div>' +
+  '<p class="spiega">Chi scrive «Pistoia» a un assistente AI ti trova sempre. Ma molti visitatori <b>non hanno ancora scelto dove andare</b>: fanno una domanda generica, e l’assistente decide quali posti nominare. Qui vedi se tra quei posti ci sei tu.</p>' +
+  '<div class="eb">Come funziona, con un esempio: le città d’arte</div>' +
+  '<div class="tre">' + tappe.map(([k, nome, chiE], i) => { const q = es[i], [t, c] = esito(q.sum / NE * 100); return '<div class="passo"><div class="num">' + (i + 1) + '</div><div class="pn">' + nome + '</div><div class="sm">' + chiE + '</div><div class="dom">«' + esc(q.q) + '»</div><div class="ris ' + c + '">' + chi(q.sum) + '</div><div class="sm">Nominano anche: ' + q.others.slice(0, 3).map(o => esc(o[0])).join(', ') + '</div></div>'; }).join('') + '</div>' +
+  '<p class="spiega" style="margin-top:14px">Più la domanda è larga, più posti ci sono tra cui scegliere, e più è difficile essere nominati. Abbiamo fatto lo stesso con tutti i tuoi temi:</p>' +
+  '<div class="tbl"><table class="tt"><tr><th>Quando chiedono di…</th>' + tappe.map(([k, n]) => '<th>' + n + '</th>').join('') + '</tr>' +
+  D.temi.map(t => '<tr><td style="font-weight:500">' + t.nome + '</td>' + tappe.map(([k]) => { const c = stat(sel(k, t.k)), [tx, cl] = esito(c.pct); return '<td><button class="cel" data-jump="mete" data-l="' + k + '" data-t="' + t.k + '"><span class="ris ' + cl + '">' + tx + '</span><small>' + c.yes + ' risposte su ' + c.a + '</small></button></td>'; }).join('') + '</tr>').join('') + '</table></div>' +
+  '<p class="sm" style="margin:12px 0 0"><b style="color:var(--ink)">Come si legge.</b> «Ti trovano»: almeno due risposte su tre nominano un tuo luogo (Pistoia, l’Abetone, Cutigliano…). «A volte»: almeno una su tre. «Non ti trovano»: meno. Clicca una casella per vedere chi nominano al posto tuo.</p></div>';
 }
 function mete() {
   const qs = sel(st.l, st.t), c = stat(qs), m = {}; qs.forEach(q => q.others.forEach(([n, v]) => m[n] = (m[n] || 0) + v));
